@@ -1,7 +1,10 @@
-import openai
 import os
 import pickle
 import time
+
+import openai
+from dotenv import load_dotenv
+from openai import OpenAI
 
 
 class GPT:
@@ -22,6 +25,11 @@ class GPT:
         # used for openai API
         self.seed = seed
 
+        load_dotenv()
+        self.client = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            organization=os.getenv("OPENAI_ORGANIZATION"),
+        )
         # base_prompt should never be None, but end_prompt can be
         assert base_prompt is not None
         self.base_prompt = base_prompt
@@ -62,24 +70,25 @@ class GPT:
         return (self.model_name, tuple_messages, max_tokens, temperature, seed)
 
     def initialize(self):
-        openai.api_key = os.getenv("OPENAI_API_KEY")
-        openai.organization = os.getenv("OPENAI_ORGANIZATION")
+        print("initializing? does this ever get called?")
 
     def get_cost(self):
         cost = 0
         if self.model_name == "gpt-4-0314":
             prompt_tok_cost = 0.03 / 1000
             completion_tok_cost = 0.06 / 1000
+        elif self.model_name == "gpt-4.1-nano":
+            prompt_tok_cost = 0.01 / 1000
+            completion_tok_cost = 0.04 / 1000
         else:
             raise NotImplementedError()
 
         for usage in self.usages:
-            cost += prompt_tok_cost * usage["prompt_tokens"]
-            cost += completion_tok_cost * usage["completion_tokens"]
+            cost += prompt_tok_cost * usage.prompt_tokens
+            cost += completion_tok_cost * usage.completion_tokens
         return cost
 
     def call(self, max_tokens=100, temperature=0.5):
-
         key = self.get_cache_key(max_tokens, temperature, self.messages, self.seed)
 
         if key in self.cache:
@@ -92,7 +101,7 @@ class GPT:
             and appends output as new message"""
             while True:
                 try:
-                    completion = openai.ChatCompletion.create(
+                    completion = self.client.chat.completions.create(
                         model=self.model_name,
                         messages=self.messages,
                         max_tokens=max_tokens,
@@ -100,12 +109,12 @@ class GPT:
                         seed=self.seed,
                     )
                     break
-                except openai.error.RateLimitError:
+                except openai.RateLimitError:
                     # TODO: hacky
                     print("rate limit error; waiting 10 secs...")
                     time.sleep(10)
                     continue
-            output = completion.choices[0].message["content"]
+            output = completion.choices[0].message.content
             self.messages.append({"role": "assistant", "content": output})
             self.usages.append(completion.usage)
 

@@ -96,14 +96,14 @@ STRATEGIES = [
     {
         "strategy": "gpt",
         "id": "gpt4",
-        "model_name": "gpt-4-0314",
+        "model_name": "gpt-4.1-nano",
         "use_gold_output": True,
         "assume_known_prior": False,
     },
     {
         "strategy": "gpt",
         "id": "gpt4_known",
-        "model_name": "gpt-4-0314",
+        "model_name": "gpt-4.1-nano",
         "use_gold_output": True,
         "assume_known_prior": True,
     },

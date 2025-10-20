@@ -39,7 +39,7 @@ TEACHING_PARAMS = {
     },
     "gpt4": {
         "id": "gpt4",  # used as name
-        "model_name": "gpt-4-0314",
+        "model_name": "gpt-4.1-nano",
         "strategy": "gpt",
         "use_gold_output": True,
         "filter_duplicates": False,
@@ -47,7 +47,7 @@ TEACHING_PARAMS = {
     },
     "gpt4_known": {
         "id": "gpt4_known",  # used as name
-        "model_name": "gpt-4-0314",
+        "model_name": "gpt-4.1-nano",
         "strategy": "gpt",
         "use_gold_output": True,
         "filter_duplicates": False,
@@ -55,7 +55,7 @@ TEACHING_PARAMS = {
     },
     "gpt4_atom_combo_overwrite": {
         "id": "gpt4_atom_combo_overwrite",  # used as name
-        "model_name": "gpt-4-0314",
+        "model_name": "gpt-4.1-nano",
         "strategy": "gpt+probabilistic",
         "loss_type": "mle",
         "use_gold_output": True,
