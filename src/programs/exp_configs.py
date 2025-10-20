@@ -65,4 +65,28 @@ TEACHING_PARAMS = {
         "combine_strategy": "overwrite_prompt",
         "update_student_beliefs": True,
     },
+    "gemma_base": {
+        "id": "gemma_base",
+        "model_name": "google/gemma-3-1b-it",
+        "strategy": "gemma",
+        "use_gold_output": True,
+        "filter_duplicates": False,
+        "assume_known_prior": False,
+    },
+    "gemma_bayesian": {
+        "id": "gemma_bayesian",
+        "model_name": "linluqiu/gemma_bayesian",
+        "strategy": "gemma+bayesian",
+        "use_gold_output": True,
+        "filter_duplicates": False,
+        "assume_known_prior": False,
+    },
+    "gemma_oracle": {
+        "id": "gemma_oracle",
+        "model_name": "linluqiu/gemma_oracle",
+        "strategy": "gemma+oracle",
+        "use_gold_output": True,
+        "filter_duplicates": False,
+        "assume_known_prior": False,
+    },
 }

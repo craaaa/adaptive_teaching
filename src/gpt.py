@@ -3,8 +3,10 @@ import pickle
 import time
 
 import openai
+import transformers
 from dotenv import load_dotenv
 from openai import OpenAI
+from transformers import pipeline
 
 
 class GPT:
@@ -23,13 +25,19 @@ class GPT:
         super().__init__(*args, **kwargs)
 
         # used for openai API
+        transformers.set_seed(seed)
         self.seed = seed
 
         load_dotenv()
-        self.client = OpenAI(
-            api_key=os.getenv("OPENAI_API_KEY"),
-            organization=os.getenv("OPENAI_ORGANIZATION"),
-        )
+
+        # TODO: hacky, only allows for gemma models for now
+        if "gemma" in model_name:
+            self.pipeline = pipeline("text-generation", model=model_name)
+        else:
+            self.client = OpenAI(
+                api_key=os.getenv("OPENAI_API_KEY"),
+                organization=os.getenv("OPENAI_ORGANIZATION"),
+            )
         # base_prompt should never be None, but end_prompt can be
         assert base_prompt is not None
         self.base_prompt = base_prompt
@@ -80,6 +88,8 @@ class GPT:
         elif self.model_name == "gpt-4.1-nano":
             prompt_tok_cost = 0.01 / 1000
             completion_tok_cost = 0.04 / 1000
+        elif "gemma" in self.model_name:
+            return 0
         else:
             raise NotImplementedError()
 
@@ -95,7 +105,17 @@ class GPT:
             output = self.cache[key]
             self.messages.append({"role": "assistant", "content": output})
             return output
-
+        elif "gemma" in self.model_name:
+            generate_kwargs = {
+                "do_sample": True,
+                "temperature": temperature,
+                "max_new_tokens": max_tokens,
+            }
+            self.base_prompt
+            self.messages = self.pipeline(self.messages, **generate_kwargs)[0][
+                "generated_text"
+            ]
+            return self.messages[-1]["content"]
         else:
             """Calls openai.ChatCompletion with self.messages
             and appends output as new message"""

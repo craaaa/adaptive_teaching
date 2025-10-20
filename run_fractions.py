@@ -1,33 +1,27 @@
-import pandas as pd
-from time import sleep
-import time
 import argparse
 import random
+import time
+from time import sleep
+
 import wandb
-
-from src.eval import *
-from src.programs.interpreter import Interpreter
-from src.programs.synthesizer import *
-from src.programs.bps import *
-from src.programs.utils import get_prog_reps, print_beliefs
-from src.programs.prior import *
-
-from src.programs.exp_configs import TEACHING_PARAMS
-from src.programs.concepts import *
-from src.programs.prog_configs import *
-from src.programs.utils import run_teaching_exp
-
-from src.programs.fractions.dataset import *
-from src.programs.fractions.teacher import *
-
 from run_functions import (
+    get_outputs_by_inp,
     run_exp,
     run_teaching_exp,
-    get_outputs_by_inp,
     save_initial_files,
 )
-
-from src.utils import set_random_seeds, print_dict
+from src.eval import *
+from src.programs.bps import *
+from src.programs.concepts import *
+from src.programs.exp_configs import TEACHING_PARAMS
+from src.programs.fractions.dataset import *
+from src.programs.fractions.teacher import *
+from src.programs.interpreter import Interpreter
+from src.programs.prior import *
+from src.programs.prog_configs import *
+from src.programs.synthesizer import *
+from src.programs.utils import get_prog_reps, print_beliefs, run_teaching_exp
+from src.utils import print_dict, set_random_seeds
 
 
 def initialize_gpt_args(config, gpt_helper, ordered_student_params):
@@ -67,6 +61,9 @@ def get_configs():
         TEACHING_PARAMS["gpt4"],
         TEACHING_PARAMS["gpt4_known"],
         TEACHING_PARAMS["random"],
+        TEACHING_PARAMS["gemma_base"],
+        TEACHING_PARAMS["gemma_bayesian"],
+        TEACHING_PARAMS["gemma_oracle"],
     ]
     base_config = {
         "seed": 0,
@@ -279,14 +276,14 @@ def run_exp(config, wandb_project="pedagogy_lists", exp_notes=None, tag=None):
 
     set_random_seeds(seed)
 
-    assert (
-        dataset.get_len() == num_possible_inputs
-    ), f"should be equal, but len(dataset): {len(dataset)}; num_possible_inputs: {num_possible_inputs}"
+    assert dataset.get_len() == num_possible_inputs, (
+        f"should be equal, but len(dataset): {len(dataset)}; num_possible_inputs: {num_possible_inputs}"
+    )
 
     if outputs_by_inp is not None:
-        assert dataset.get_len() == len(
-            outputs_by_inp.keys()
-        ), f"should be equal, but len(dataset): {len(dataset)}; len(outputs_by_inp.keys()): {len(outputs_by_inp.keys())}"
+        assert dataset.get_len() == len(outputs_by_inp.keys()), (
+            f"should be equal, but len(dataset): {len(dataset)}; len(outputs_by_inp.keys()): {len(outputs_by_inp.keys())}"
+        )
 
     if tag is None:
         tags = []
@@ -320,7 +317,7 @@ def run_exp(config, wandb_project="pedagogy_lists", exp_notes=None, tag=None):
 
         sleep(1)
         print("======================================================")
-        print(f"Strategy: {strategy} ({t_idx+1}/{len(teaching_params_lst)})")
+        print(f"Strategy: {strategy} ({t_idx + 1}/{len(teaching_params_lst)})")
 
         set_random_seeds(seed)
 
@@ -427,7 +424,7 @@ if __name__ == "__main__":
     print(f"Number of experiments: {len(configs)}")
 
     for exp_idx, config in enumerate(configs):
-        print(f"Starting exp {exp_idx+1}/{len(configs)}")
+        print(f"Starting exp {exp_idx + 1}/{len(configs)}")
         print_dict(config)
         t0 = time.time()
 
@@ -439,5 +436,5 @@ if __name__ == "__main__":
         )
         t1 = time.time()
         print(
-            f"Finished exp {exp_idx+1}/{len(configs)} ({round((t1-t0)/60, 2)} minutes)"
+            f"Finished exp {exp_idx + 1}/{len(configs)} ({round((t1 - t0) / 60, 2)} minutes)"
         )
